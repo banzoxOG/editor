@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frame Capture Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3f;
+    --accent: #00ff88;
+    --accent2: #ff3366;
+    --text: #e8e8f0;
+    --muted: #666680;
+    --card: #16161f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+
+  .badge {
+    font-size: 0.65rem;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Drop Zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 64px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,255,136,0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+  }
+  .drop-zone:hover::before, .drop-zone.drag-over::before {
+    opacity: 1;
+  }
+
+  .drop-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .drop-zone h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .drop-zone p {
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* Player Section */
+  .player-section {
+    display: none;
+  }
+  .player-section.active { display: block; }
+
+  .video-wrapper {
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  video {
+    width: 100%;
+    display: block;
+    max-height: 500px;
+    object-fit: contain;
+    background: #000;
+  }
+
+  /* Time overlay */
+  .time-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(0,255,136,0.3);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Controls */
+  .controls {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .scrubber-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .time-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 90px;
+    text-align: right;
+  }
+
+  /* Custom scrubber */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(0,255,136,0.15), 0 0 12px rgba(0,255,136,0.4);
+    transition: box-shadow 0.15s;
+  }
+
+  input[type="range"]:hover::-webkit-slider-thumb {
+    box-shadow: 0 0 0 6px rgba(0,255,136,0.2), 0 0 20px rgba(0,255,136,0.6);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 12px rgba(0,255,136,0.4);
+  }
+
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.15s ease;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  .btn-play {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    min-width: 90px;
+  }
+  .btn-play:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* GREEN screenshot button */
+  .btn-screenshot {
+    background: var(--accent);
+    color: #000;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+  }
+
+  .btn-screenshot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .btn-screenshot:hover::before { transform: translateX(0); }
+  .btn-screenshot:active { transform: scale(0.96); }
+
+  .dot-green {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #003d1a;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+    animation: pulse-green 2s infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(0,0,0,0.3); }
+    50% { box-shadow: 0 0 0 4px rgba(0,0,0,0.2), 0 0 8px rgba(0,0,0,0.4); }
+  }
+
+  /* RED zip button */
+  .btn-zip {
+    background: var(--accent2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+  }
+  .btn-zip:hover { background: #ff1a4d; transform: translateY(-1px); }
+  .btn-zip:active { transform: scale(0.96); }
+  .btn-zip:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .dot-red {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    flex-shrink: 0;
+  }
+
+  .btn-clear {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-clear:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  .spacer { flex: 1; }
+
+  .frame-count {
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .frame-count strong { color: var(--accent); }
+
+  /* Screenshots grid */
+  .screenshots-section {
+    margin-top: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .frame-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+    group: true;
+  }
+
+  .frame-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .frame-card img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+
+  .frame-meta {
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .frame-time {
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .frame-num {
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+
+  .frame-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,51,102,0.85);
+    color: #fff;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .frame-card:hover .frame-delete { opacity: 1; }
+
+  /* Flash effect */
+  .flash {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,255,136,0.15);
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    animation: flash-anim 0.35s ease-out;
+  }
+
+  @keyframes flash-anim {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .empty-grid {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    color: var(--accent);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 24px rgba(0,255,136,0.2);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  canvas { display: none; }
+
+  /* Zip progress */
+  .zip-progress {
+    font-size: 0.72rem;
+    color: var(--accent2);
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+  .zip-progress.visible { display: flex; }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,51,102,0.3);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo">FRAME<span>.</span>CAP</div>
+    <div class="badge">Studio v1.0</div>
+  </header>
+
+  <!-- Drop Zone -->
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept="video/*">
+    <span class="drop-icon">🎬</span>
+    <h2>Drop your video here</h2>
+    <p>OR CLICK TO BROWSE &nbsp;·&nbsp; MP4, WEBM, MOV, AVI SUPPORTED</p>
+  </div>
+
+  <!-- Player -->
+  <div class="player-section" id="playerSection">
+    <div class="video-wrapper">
+      <video id="video" preload="metadata"></video>
+      <div class="time-overlay" id="timeOverlay">00:00.000</div>
+    </div>
+
+    <div class="controls">
+      <div class="scrubber-row">
+        <input type="range" id="scrubber" min="0" max="1000" value="0" step="1">
+        <span class="time-label" id="timeLabel">0:00 / 0:00</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-play" id="btnPlay">▶ PLAY</button>
+        <button class="btn-screenshot" id="btnScreenshot">
+          <span class="dot-green"></span>
+          CAPTURE FRAME
+        </button>
+        <button class="btn-zip" id="btnZip" disabled>
+          <span class="dot-red"></span>
+          EXPORT ZIP
+        </button>
+        <div class="zip-progress" id="zipProgress">
+          <div class="spinner"></div>
+          <span>Packing...</span>
+        </div>
+        <div class="spacer"></div>
+        <div class="frame-count">Frames: <strong id="frameCountNum">0</strong></div>
+        <button class="btn-clear" id="btnClear">CLEAR ALL</button>
+      </div>
+    </div>
+
+    <!-- Screenshots -->
+    <div class="screenshots-section">
+      <div class="section-header">
+        <div class="section-title">Captured Frames</div>
+      </div>
+      <div class="grid" id="grid">
+        <div class="empty-grid">No frames captured yet — scrub the video and hit CAPTURE FRAME</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<canvas id="canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const playerSection = document.getElementById('playerSection');
+  const video = document.getElementById('video');
+  const scrubber = document.getElementById('scrubber');
+  const timeLabel = document.getElementById('timeLabel');
+  const timeOverlay = document.getElementById('timeOverlay');
+  const btnPlay = document.getElementById('btnPlay');
+  const btnScreenshot = document.getElementById('btnScreenshot');
+  const btnZip = document.getElementById('btnZip');
+  const btnClear = document.getElementById('btnClear');
+  const grid = document.getElementById('grid');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const frameCountNum = document.getElementById('frameCountNum');
+  const zipProgress = document.getElementById('zipProgress');
+
+  let screenshots = []; // { dataUrl, time, index }
+  let frameCounter = 0;
+  let isScrubbing = false;
+
+  // File load
+  function loadVideo(file) {
+    if (!file || !file.type.startsWith('video/')) return;
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.load();
+    dropZone.style.display = 'none';
+    playerSection.classList.add('active');
+  }
+
+  fileInput.addEventListener('change', e => loadVideo(e.target.files[0]));
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    loadVideo(e.dataTransfer.files[0]);
+  });
+
+  // Video events
+  video.addEventListener('loadedmetadata', () => {
+    updateTimeLabel();
+  });
+
+  video.addEventListener('timeupdate', () => {
+    if (!isScrubbing) {
+      const pct = video.duration ? (video.currentTime / video.duration) * 1000 : 0;
+      scrubber.value = pct;
+    }
+    updateTimeLabel();
+  });
+
+  video.addEventListener('play', () => { btnPlay.textContent = '⏸ PAUSE'; });
+  video.addEventListener('pause', () => { btnPlay.textContent = '▶ PLAY'; });
+  video.addEventListener('ended', () => { btnPlay.textContent = '▶ PLAY'; });
+
+  // Scrubber — frame-accurate
+  scrubber.addEventListener('mousedown', () => { isScrubbing = true; video.pause(); });
+  scrubber.addEventListener('touchstart', () => { isScrubbing = true; video.pause(); }, {passive: true});
+
+  scrubber.addEventListener('input', () => {
+    if (!video.duration) return;
+    const t = (scrubber.value / 1000) * video.duration;
+    video.currentTime = t;
+    updateTimeLabel();
+  });
+
+  document.addEventListener('mouseup', () => { isScrubbing = false; });
+  document.addEventListener('touchend', () => { isScrubbing = false; });
+
+  function updateTimeLabel() {
+    const cur = formatTime(video.currentTime || 0);
+    const dur = formatTime(video.duration || 0);
+    timeLabel.textContent = `${cur} / ${dur}`;
+    timeOverlay.textContent = formatTimeMs(video.currentTime || 0);
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+
+  function formatTimeMs(s) {
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    const ms = Math.floor((s % 1) * 1000).toString().padStart(3, '0');
+    return `${m}:${sec}.${ms}`;
+  }
+
+  // Play/Pause
+  btnPlay.addEventListener('click', () => {
+    if (video.paused) video.play();
+    else video.pause();
+  });
+
+  // Screenshot
+  btnScreenshot.addEventListener('click', () => {
+    if (!video.videoWidth) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/png');
+    frameCounter++;
+    const entry = { dataUrl, time: video.currentTime, index: frameCounter };
+    screenshots.push(entry);
+    addFrameCard(entry);
+    updateZipBtn();
+    flashEffect();
+    showToast(`Frame #${frameCounter} captured at ${formatTimeMs(video.currentTime)}`);
+  });
+
+  function addFrameCard(entry) {
+    // Remove empty placeholder
+    const empty = grid.querySelector('.empty-grid');
+    if (empty) empty.remove();
+
+    const card = document.createElement('div');
+    card.className = 'frame-card';
+    card.dataset.index = entry.index;
+
+    const img = document.createElement('img');
+    img.src = entry.dataUrl;
+    img.alt = `Frame ${entry.index}`;
+
+    const meta = document.createElement('div');
+    meta.className = 'frame-meta';
+    meta.innerHTML = `<span class="frame-time">${formatTimeMs(entry.time)}</span><span class="frame-num">#${entry.index}</span>`;
+
+    const del = document.createElement('button');
+    del.className = 'frame-delete';
+    del.textContent = '×';
+    del.title = 'Remove';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      screenshots = screenshots.filter(s => s.index !== entry.index);
+      card.remove();
+      updateZipBtn();
+      if (screenshots.length === 0) {
+        grid.innerHTML = '<div class="empty-grid">No frames captured yet — scrub the video and hit CAPTURE FRAME</div>';
+      }
+    });
+
+    // Click to jump to that time
+    img.addEventListener('click', () => {
+      video.currentTime = entry.time;
+      scrubber.value = video.duration ? (entry.time / video.duration) * 1000 : 0;
+    });
+
+    card.appendChild(img);
+    card.appendChild(meta);
+    card.appendChild(del);
+    grid.appendChild(card);
+    frameCountNum.textContent = screenshots.length;
+  }
+
+  function updateZipBtn() {
+    frameCountNum.textContent = screenshots.length;
+    btnZip.disabled = screenshots.length === 0;
+  }
+
+  // Clear all
+  btnClear.addEventListener('click', () => {
+    screenshots = [];
+    frameCounter = 0;
+    grid.innerHTML = '<div class="empty-grid">No frames captured yet — scrub the video and hit CAPTURE FRAME</div>';
+    updateZipBtn();
+  });
+
+  // Export ZIP — RED button
+  btnZip.addEventListener('click', async () => {
+    if (!screenshots.length) return;
+    btnZip.disabled = true;
+    zipProgress.classList.add('visible');
+
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder('frames');
+
+      for (let i = 0; i < screenshots.length; i++) {
+        const s = screenshots[i];
+        const base64 = s.dataUrl.split(',')[1];
+        const timeStr = formatTimeMs(s.time).replace(/:/g, '-').replace('.', '_');
+        folder.file(`frame_${String(i + 1).padStart(3, '0')}_${timeStr}.png`, base64, { base64: true });
+      }
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `framecap_${Date.now()}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`✓ ${screenshots.length} frames exported to ZIP`);
+    } catch(err) {
+      showToast('Error creating ZIP');
+      console.error(err);
+    }
+
+    zipProgress.classList.remove('visible');
+    updateZipBtn();
+  });
+
+  // Flash
+  function flashEffect() {
+    const f = document.createElement('div');
+    f.className = 'flash';
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 400);
+  }
+
+  // Toast
+  let toastTimer;
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (!video.src) return;
+    if (e.key === ' ') { e.preventDefault(); if (video.paused) video.play(); else video.pause(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 1/60 : 0.5)); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime + (e.shiftKey ? 1/60 : 0.5)); }
+    if (e.key === 's' || e.key === 'S') { btnScreenshot.click(); }
+  });
+</script>
+</body>
+</html>
