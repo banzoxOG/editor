@@ -15,6 +15,7 @@
     --border: #2a2a3f;
     --accent: #00ff88;
     --accent2: #ff3366;
+    --accent3: #7c6bff;
     --text: #e8e8f0;
     --muted: #666680;
     --card: #16161f;
@@ -30,7 +31,6 @@
     overflow-x: hidden;
   }
 
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -76,7 +76,6 @@
     text-transform: uppercase;
   }
 
-  /* Drop Zone */
   .drop-zone {
     border: 2px dashed var(--border);
     border-radius: 16px;
@@ -98,18 +97,10 @@
     transition: opacity 0.25s;
   }
 
-  .drop-zone:hover, .drop-zone.drag-over {
-    border-color: var(--accent);
-  }
-  .drop-zone:hover::before, .drop-zone.drag-over::before {
-    opacity: 1;
-  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); }
+  .drop-zone:hover::before, .drop-zone.drag-over::before { opacity: 1; }
 
-  .drop-icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
-    display: block;
-  }
+  .drop-icon { font-size: 3rem; margin-bottom: 16px; display: block; }
 
   .drop-zone h2 {
     font-family: 'Syne', sans-serif;
@@ -118,11 +109,7 @@
     font-weight: 700;
   }
 
-  .drop-zone p {
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
-  }
+  .drop-zone p { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.05em; }
 
   .drop-zone input[type="file"] {
     position: absolute;
@@ -131,10 +118,7 @@
     cursor: pointer;
   }
 
-  /* Player Section */
-  .player-section {
-    display: none;
-  }
+  .player-section { display: none; }
   .player-section.active { display: block; }
 
   .video-wrapper {
@@ -154,7 +138,6 @@
     background: #000;
   }
 
-  /* Time overlay */
   .time-overlay {
     position: absolute;
     top: 12px;
@@ -169,7 +152,6 @@
     backdrop-filter: blur(4px);
   }
 
-  /* Controls */
   .controls {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -193,7 +175,6 @@
     text-align: right;
   }
 
-  /* Custom scrubber */
   input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -203,7 +184,6 @@
     border-radius: 3px;
     outline: none;
     cursor: pointer;
-    position: relative;
   }
 
   input[type="range"]::-webkit-slider-thumb {
@@ -236,8 +216,137 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    margin-bottom: 14px;
   }
 
+  /* ── SKIP ROW ── */
+  .skip-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .skip-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .skip-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .skip-input-wrap input[type="number"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--accent3);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 7px 44px 7px 12px;
+    width: 110px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    text-align: center;
+  }
+
+  .skip-input-wrap input[type="number"]::-webkit-inner-spin-button,
+  .skip-input-wrap input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .skip-input-wrap input[type="number"]:focus {
+    border-color: var(--accent3);
+    box-shadow: 0 0 0 3px rgba(124,107,255,0.18);
+  }
+
+  .skip-unit {
+    position: absolute;
+    right: 10px;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    pointer-events: none;
+  }
+
+  /* preset chips */
+  .skip-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .chip:hover { border-color: var(--accent3); color: var(--accent3); }
+  .chip.active { border-color: var(--accent3); color: var(--accent3); background: rgba(124,107,255,0.12); }
+
+  /* skip buttons */
+  .btn-skip {
+    background: var(--surface2);
+    color: var(--accent3);
+    border: 1px solid rgba(124,107,255,0.4);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .btn-skip:hover {
+    border-color: var(--accent3);
+    background: rgba(124,107,255,0.14);
+    transform: translateY(-1px);
+  }
+
+  .btn-skip:active { transform: scale(0.95); }
+
+  .skip-delta-display {
+    font-size: 0.68rem;
+    color: var(--muted);
+    padding: 5px 10px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    min-width: 130px;
+    text-align: center;
+    transition: color 0.2s;
+  }
+
+  .skip-delta-display.jumped {
+    color: var(--accent3);
+    border-color: rgba(124,107,255,0.4);
+  }
+
+  /* rest of buttons */
   button {
     font-family: 'Space Mono', monospace;
     font-size: 0.78rem;
@@ -258,7 +367,6 @@
   }
   .btn-play:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* GREEN screenshot button */
   .btn-screenshot {
     background: var(--accent);
     color: #000;
@@ -283,8 +391,7 @@
   .btn-screenshot:active { transform: scale(0.96); }
 
   .dot-green {
-    width: 10px;
-    height: 10px;
+    width: 10px; height: 10px;
     border-radius: 50%;
     background: #003d1a;
     box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
@@ -297,7 +404,6 @@
     50% { box-shadow: 0 0 0 4px rgba(0,0,0,0.2), 0 0 8px rgba(0,0,0,0.4); }
   }
 
-  /* RED zip button */
   .btn-zip {
     background: var(--accent2);
     color: #fff;
@@ -308,16 +414,10 @@
   }
   .btn-zip:hover { background: #ff1a4d; transform: translateY(-1px); }
   .btn-zip:active { transform: scale(0.96); }
-  .btn-zip:disabled {
-    background: var(--border);
-    color: var(--muted);
-    cursor: not-allowed;
-    transform: none;
-  }
+  .btn-zip:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
 
   .dot-red {
-    width: 10px;
-    height: 10px;
+    width: 10px; height: 10px;
     border-radius: 50%;
     background: rgba(255,255,255,0.4);
     flex-shrink: 0;
@@ -341,10 +441,7 @@
   }
   .frame-count strong { color: var(--accent); }
 
-  /* Screenshots grid */
-  .screenshots-section {
-    margin-top: 24px;
-  }
+  .screenshots-section { margin-top: 24px; }
 
   .section-header {
     display: flex;
@@ -366,8 +463,7 @@
   .section-title::before {
     content: '';
     display: block;
-    width: 4px;
-    height: 16px;
+    width: 4px; height: 16px;
     background: var(--accent);
     border-radius: 2px;
   }
@@ -386,13 +482,9 @@
     position: relative;
     transition: border-color 0.2s, transform 0.2s;
     cursor: pointer;
-    group: true;
   }
 
-  .frame-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-  }
+  .frame-card:hover { border-color: var(--accent); transform: translateY(-2px); }
 
   .frame-card img {
     width: 100%;
@@ -408,23 +500,13 @@
     justify-content: space-between;
   }
 
-  .frame-time {
-    font-size: 0.65rem;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-
-  .frame-num {
-    font-size: 0.6rem;
-    color: var(--muted);
-  }
+  .frame-time { font-size: 0.65rem; color: var(--accent); letter-spacing: 0.05em; }
+  .frame-num { font-size: 0.6rem; color: var(--muted); }
 
   .frame-delete {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 22px;
-    height: 22px;
+    top: 6px; right: 6px;
+    width: 22px; height: 22px;
     border-radius: 50%;
     background: rgba(255,51,102,0.85);
     color: #fff;
@@ -442,7 +524,6 @@
 
   .frame-card:hover .frame-delete { opacity: 1; }
 
-  /* Flash effect */
   .flash {
     position: fixed;
     inset: 0;
@@ -468,11 +549,9 @@
     border-radius: 10px;
   }
 
-  /* Toast */
   .toast {
     position: fixed;
-    bottom: 32px;
-    right: 32px;
+    bottom: 32px; right: 32px;
     background: var(--surface2);
     border: 1px solid var(--accent);
     padding: 12px 20px;
@@ -486,14 +565,10 @@
     box-shadow: 0 4px 24px rgba(0,255,136,0.2);
   }
 
-  .toast.show {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  .toast.show { transform: translateY(0); opacity: 1; }
 
   canvas { display: none; }
 
-  /* Zip progress */
   .zip-progress {
     font-size: 0.72rem;
     color: var(--accent2);
@@ -503,12 +578,9 @@
   }
   .zip-progress.visible { display: flex; }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .spinner {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     border: 2px solid rgba(255,51,102,0.3);
     border-top-color: var(--accent2);
     border-radius: 50%;
@@ -521,10 +593,9 @@
 <div class="app">
   <header>
     <div class="logo">FRAME<span>.</span>CAP</div>
-    <div class="badge">Studio v1.0</div>
+    <div class="badge">Studio v1.1</div>
   </header>
 
-  <!-- Drop Zone -->
   <div class="drop-zone" id="dropZone">
     <input type="file" id="fileInput" accept="video/*">
     <span class="drop-icon">🎬</span>
@@ -532,7 +603,6 @@
     <p>OR CLICK TO BROWSE &nbsp;·&nbsp; MP4, WEBM, MOV, AVI SUPPORTED</p>
   </div>
 
-  <!-- Player -->
   <div class="player-section" id="playerSection">
     <div class="video-wrapper">
       <video id="video" preload="metadata"></video>
@@ -540,10 +610,13 @@
     </div>
 
     <div class="controls">
+      <!-- Scrubber -->
       <div class="scrubber-row">
         <input type="range" id="scrubber" min="0" max="1000" value="0" step="1">
         <span class="time-label" id="timeLabel">0:00 / 0:00</span>
       </div>
+
+      <!-- Main buttons -->
       <div class="btn-row">
         <button class="btn-play" id="btnPlay">▶ PLAY</button>
         <button class="btn-screenshot" id="btnScreenshot">
@@ -562,9 +635,36 @@
         <div class="frame-count">Frames: <strong id="frameCountNum">0</strong></div>
         <button class="btn-clear" id="btnClear">CLEAR ALL</button>
       </div>
+
+      <!-- ── SKIP ROW ── -->
+      <div class="skip-row">
+        <span class="skip-label">⏱ Skip by</span>
+
+        <!-- Custom ms input -->
+        <div class="skip-input-wrap">
+          <input type="number" id="skipMs" min="1" max="60000" value="33" placeholder="33">
+          <span class="skip-unit">MS</span>
+        </div>
+
+        <!-- Preset chips -->
+        <div class="skip-presets" id="skipPresets">
+          <button class="chip" data-ms="16">~1f@60</button>
+          <button class="chip active" data-ms="33">~1f@30</button>
+          <button class="chip" data-ms="41">~1f@24</button>
+          <button class="chip" data-ms="100">100ms</button>
+          <button class="chip" data-ms="500">0.5s</button>
+          <button class="chip" data-ms="1000">1s</button>
+        </div>
+
+        <!-- Skip buttons -->
+        <button class="btn-skip" id="btnSkipBack">◀◀ BACK</button>
+        <button class="btn-skip" id="btnSkipFwd">FWD ▶▶</button>
+
+        <!-- Live delta readout -->
+        <div class="skip-delta-display" id="skipDeltaDisplay">step: 33 ms</div>
+      </div>
     </div>
 
-    <!-- Screenshots -->
     <div class="screenshots-section">
       <div class="section-header">
         <div class="section-title">Captured Frames</div>
@@ -580,28 +680,97 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const dropZone = document.getElementById('dropZone');
-  const fileInput = document.getElementById('fileInput');
-  const playerSection = document.getElementById('playerSection');
-  const video = document.getElementById('video');
-  const scrubber = document.getElementById('scrubber');
-  const timeLabel = document.getElementById('timeLabel');
-  const timeOverlay = document.getElementById('timeOverlay');
-  const btnPlay = document.getElementById('btnPlay');
-  const btnScreenshot = document.getElementById('btnScreenshot');
-  const btnZip = document.getElementById('btnZip');
-  const btnClear = document.getElementById('btnClear');
-  const grid = document.getElementById('grid');
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const frameCountNum = document.getElementById('frameCountNum');
-  const zipProgress = document.getElementById('zipProgress');
+  const dropZone       = document.getElementById('dropZone');
+  const fileInput      = document.getElementById('fileInput');
+  const playerSection  = document.getElementById('playerSection');
+  const video          = document.getElementById('video');
+  const scrubber       = document.getElementById('scrubber');
+  const timeLabel      = document.getElementById('timeLabel');
+  const timeOverlay    = document.getElementById('timeOverlay');
+  const btnPlay        = document.getElementById('btnPlay');
+  const btnScreenshot  = document.getElementById('btnScreenshot');
+  const btnZip         = document.getElementById('btnZip');
+  const btnClear       = document.getElementById('btnClear');
+  const grid           = document.getElementById('grid');
+  const canvas         = document.getElementById('canvas');
+  const ctx            = canvas.getContext('2d');
+  const frameCountNum  = document.getElementById('frameCountNum');
+  const zipProgress    = document.getElementById('zipProgress');
+  const skipMsInput    = document.getElementById('skipMs');
+  const skipPresets    = document.getElementById('skipPresets');
+  const btnSkipBack    = document.getElementById('btnSkipBack');
+  const btnSkipFwd     = document.getElementById('btnSkipFwd');
+  const skipDeltaDisp  = document.getElementById('skipDeltaDisplay');
 
-  let screenshots = []; // { dataUrl, time, index }
+  let screenshots  = [];
   let frameCounter = 0;
-  let isScrubbing = false;
+  let isScrubbing  = false;
 
-  // File load
+  // ── Skip helpers ─────────────────────────────────────────────
+  function getSkipMs() {
+    return Math.max(1, parseInt(skipMsInput.value) || 33);
+  }
+
+  function updateSkipDisplay(ms) {
+    skipDeltaDisp.textContent = `step: ${ms} ms`;
+  }
+
+  // Sync chip active state to current ms value
+  function syncChips(ms) {
+    skipPresets.querySelectorAll('.chip').forEach(c => {
+      c.classList.toggle('active', parseInt(c.dataset.ms) === ms);
+    });
+  }
+
+  skipMsInput.addEventListener('input', () => {
+    const ms = getSkipMs();
+    updateSkipDisplay(ms);
+    syncChips(ms);
+  });
+
+  // Preset chips
+  skipPresets.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const ms = parseInt(chip.dataset.ms);
+      skipMsInput.value = ms;
+      updateSkipDisplay(ms);
+      syncChips(ms);
+    });
+  });
+
+  // Skip backward
+  btnSkipBack.addEventListener('click', () => {
+    if (!video.duration) return;
+    const ms = getSkipMs();
+    const prev = video.currentTime;
+    video.currentTime = Math.max(0, prev - ms / 1000);
+    scrubber.value = video.duration ? (video.currentTime / video.duration) * 1000 : 0;
+    flashSkip('back', ms);
+  });
+
+  // Skip forward
+  btnSkipFwd.addEventListener('click', () => {
+    if (!video.duration) return;
+    const ms = getSkipMs();
+    const prev = video.currentTime;
+    video.currentTime = Math.min(video.duration, prev + ms / 1000);
+    scrubber.value = video.duration ? (video.currentTime / video.duration) * 1000 : 0;
+    flashSkip('fwd', ms);
+  });
+
+  function flashSkip(dir, ms) {
+    skipDeltaDisp.textContent = `${dir === 'fwd' ? '+' : '−'}${ms} ms`;
+    skipDeltaDisp.classList.add('jumped');
+    setTimeout(() => {
+      skipDeltaDisp.textContent = `step: ${ms} ms`;
+      skipDeltaDisp.classList.remove('jumped');
+    }, 600);
+  }
+
+  // Init display
+  updateSkipDisplay(getSkipMs());
+
+  // ── File load ─────────────────────────────────────────────────
   function loadVideo(file) {
     if (!file || !file.type.startsWith('video/')) return;
     const url = URL.createObjectURL(file);
@@ -612,7 +781,6 @@
   }
 
   fileInput.addEventListener('change', e => loadVideo(e.target.files[0]));
-
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', e => {
@@ -621,67 +789,58 @@
     loadVideo(e.dataTransfer.files[0]);
   });
 
-  // Video events
-  video.addEventListener('loadedmetadata', () => {
-    updateTimeLabel();
-  });
+  // ── Video events ──────────────────────────────────────────────
+  video.addEventListener('loadedmetadata', updateTimeLabel);
 
   video.addEventListener('timeupdate', () => {
     if (!isScrubbing) {
-      const pct = video.duration ? (video.currentTime / video.duration) * 1000 : 0;
-      scrubber.value = pct;
+      scrubber.value = video.duration ? (video.currentTime / video.duration) * 1000 : 0;
     }
     updateTimeLabel();
   });
 
-  video.addEventListener('play', () => { btnPlay.textContent = '⏸ PAUSE'; });
+  video.addEventListener('play',  () => { btnPlay.textContent = '⏸ PAUSE'; });
   video.addEventListener('pause', () => { btnPlay.textContent = '▶ PLAY'; });
   video.addEventListener('ended', () => { btnPlay.textContent = '▶ PLAY'; });
 
-  // Scrubber — frame-accurate
   scrubber.addEventListener('mousedown', () => { isScrubbing = true; video.pause(); });
-  scrubber.addEventListener('touchstart', () => { isScrubbing = true; video.pause(); }, {passive: true});
+  scrubber.addEventListener('touchstart', () => { isScrubbing = true; video.pause(); }, { passive: true });
 
   scrubber.addEventListener('input', () => {
     if (!video.duration) return;
-    const t = (scrubber.value / 1000) * video.duration;
-    video.currentTime = t;
+    video.currentTime = (scrubber.value / 1000) * video.duration;
     updateTimeLabel();
   });
 
-  document.addEventListener('mouseup', () => { isScrubbing = false; });
+  document.addEventListener('mouseup',  () => { isScrubbing = false; });
   document.addEventListener('touchend', () => { isScrubbing = false; });
 
   function updateTimeLabel() {
-    const cur = formatTime(video.currentTime || 0);
-    const dur = formatTime(video.duration || 0);
-    timeLabel.textContent = `${cur} / ${dur}`;
+    timeLabel.textContent = `${formatTime(video.currentTime || 0)} / ${formatTime(video.duration || 0)}`;
     timeOverlay.textContent = formatTimeMs(video.currentTime || 0);
   }
 
   function formatTime(s) {
     const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60).toString().padStart(2, '0');
-    return `${m}:${sec}`;
+    return `${m}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
   }
 
   function formatTimeMs(s) {
-    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const m   = Math.floor(s / 60).toString().padStart(2, '0');
     const sec = Math.floor(s % 60).toString().padStart(2, '0');
-    const ms = Math.floor((s % 1) * 1000).toString().padStart(3, '0');
+    const ms  = Math.floor((s % 1) * 1000).toString().padStart(3, '0');
     return `${m}:${sec}.${ms}`;
   }
 
-  // Play/Pause
+  // ── Play/Pause ────────────────────────────────────────────────
   btnPlay.addEventListener('click', () => {
-    if (video.paused) video.play();
-    else video.pause();
+    if (video.paused) video.play(); else video.pause();
   });
 
-  // Screenshot
+  // ── Screenshot ────────────────────────────────────────────────
   btnScreenshot.addEventListener('click', () => {
     if (!video.videoWidth) return;
-    canvas.width = video.videoWidth;
+    canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/png');
@@ -695,7 +854,6 @@
   });
 
   function addFrameCard(entry) {
-    // Remove empty placeholder
     const empty = grid.querySelector('.empty-grid');
     if (empty) empty.remove();
 
@@ -715,7 +873,7 @@
     del.className = 'frame-delete';
     del.textContent = '×';
     del.title = 'Remove';
-    del.addEventListener('click', (e) => {
+    del.addEventListener('click', e => {
       e.stopPropagation();
       screenshots = screenshots.filter(s => s.index !== entry.index);
       card.remove();
@@ -725,7 +883,6 @@
       }
     });
 
-    // Click to jump to that time
     img.addEventListener('click', () => {
       video.currentTime = entry.time;
       scrubber.value = video.duration ? (entry.time / video.duration) * 1000 : 0;
@@ -743,7 +900,6 @@
     btnZip.disabled = screenshots.length === 0;
   }
 
-  // Clear all
   btnClear.addEventListener('click', () => {
     screenshots = [];
     frameCounter = 0;
@@ -751,41 +907,37 @@
     updateZipBtn();
   });
 
-  // Export ZIP — RED button
+  // ── Export ZIP ────────────────────────────────────────────────
   btnZip.addEventListener('click', async () => {
     if (!screenshots.length) return;
     btnZip.disabled = true;
     zipProgress.classList.add('visible');
-
     try {
       const zip = new JSZip();
       const folder = zip.folder('frames');
-
       for (let i = 0; i < screenshots.length; i++) {
         const s = screenshots[i];
-        const base64 = s.dataUrl.split(',')[1];
+        const base64  = s.dataUrl.split(',')[1];
         const timeStr = formatTimeMs(s.time).replace(/:/g, '-').replace('.', '_');
         folder.file(`frame_${String(i + 1).padStart(3, '0')}_${timeStr}.png`, base64, { base64: true });
       }
-
       const blob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
       a.href = url;
       a.download = `framecap_${Date.now()}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       showToast(`✓ ${screenshots.length} frames exported to ZIP`);
-    } catch(err) {
+    } catch (err) {
       showToast('Error creating ZIP');
       console.error(err);
     }
-
     zipProgress.classList.remove('visible');
     updateZipBtn();
   });
 
-  // Flash
+  // ── Flash / Toast ─────────────────────────────────────────────
   function flashEffect() {
     const f = document.createElement('div');
     f.className = 'flash';
@@ -793,7 +945,6 @@
     setTimeout(() => f.remove(), 400);
   }
 
-  // Toast
   let toastTimer;
   const toast = document.getElementById('toast');
   function showToast(msg) {
@@ -803,12 +954,15 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
   }
 
-  // Keyboard shortcuts
+  // ── Keyboard shortcuts ────────────────────────────────────────
   document.addEventListener('keydown', e => {
     if (!video.src) return;
+    // Space = play/pause
     if (e.key === ' ') { e.preventDefault(); if (video.paused) video.play(); else video.pause(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 1/60 : 0.5)); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime + (e.shiftKey ? 1/60 : 0.5)); }
+    // Arrow = skip by configured step  (Shift = ±0.5s legacy)
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); e.shiftKey ? (video.currentTime = Math.max(0, video.currentTime - 0.5)) : btnSkipBack.click(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); e.shiftKey ? (video.currentTime = Math.min(video.duration, video.currentTime + 0.5)) : btnSkipFwd.click(); }
+    // S = capture
     if (e.key === 's' || e.key === 'S') { btnScreenshot.click(); }
   });
 </script>
